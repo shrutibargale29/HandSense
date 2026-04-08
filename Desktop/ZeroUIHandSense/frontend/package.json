@@ -1,0 +1,16 @@
+{
+  "name": "handsense-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Voice-Based Screenless Exam System",
+  "scripts": {
+    "start": "live-server --port=3000",
+    "build": "echo 'No build step needed for vanilla JS'"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "socket.io-client": "^4.5.4"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
