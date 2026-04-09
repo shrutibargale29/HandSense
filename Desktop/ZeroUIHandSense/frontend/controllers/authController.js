@@ -1,21 +1,18 @@
 // controllers/authController.js
-// Complete working version
-
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
-// Generate JWT token
 const generateToken = (userId, rollNumber) => {
     return jwt.sign(
         { id: userId, rollNumber: rollNumber },
-        process.env.JWT_SECRET || 'handsense_secret_key',
-        { expiresIn: '24h' }
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRE || '24h' }
     );
 };
 
-// @route   POST /api/auth/login
+// Login function
 const login = async (req, res) => {
     try {
         const { rollNumber, password } = req.body;
@@ -47,6 +44,9 @@ const login = async (req, res) => {
 
         const token = generateToken(user.id, user.roll_number);
 
+        req.session.userId = user.id;
+        req.session.rollNumber = user.roll_number;
+
         res.json({
             success: true,
             message: `Welcome ${user.name}!`,
@@ -70,7 +70,7 @@ const login = async (req, res) => {
     }
 };
 
-// @route   POST /api/auth/register
+// Register function
 const register = async (req, res) => {
     try {
         const { rollNumber, name, class: className, password } = req.body;
@@ -129,7 +129,7 @@ const register = async (req, res) => {
     }
 };
 
-// @route   POST /api/auth/logout
+// Logout function
 const logout = async (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -145,7 +145,7 @@ const logout = async (req, res) => {
     });
 };
 
-// @route   GET /api/auth/me
+// Get Me function
 const getMe = async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -157,7 +157,7 @@ const getMe = async (req, res) => {
             });
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'handsense_secret_key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
 
         if (!user) {
@@ -186,7 +186,6 @@ const getMe = async (req, res) => {
     }
 };
 
-// Export all functions
 module.exports = {
     login,
     register,

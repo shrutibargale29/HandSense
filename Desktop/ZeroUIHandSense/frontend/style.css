@@ -1,0 +1,189 @@
+/* style.css - Minimal styling for HandSense */
+/* Focus on high contrast for partially sighted users */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+/* Status Bar */
+.status-bar {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50px;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+}
+
+#statusText {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.mic-off {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.mic-on {
+    opacity: 1;
+    filter: grayscale(0);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Main Content */
+.main-content {
+    text-align: center;
+}
+
+.logo-section h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.logo-section p {
+    color: #a0a0a0;
+    margin-bottom: 40px;
+}
+
+/* Microphone Button */
+.mic-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 20px 40px;
+    font-size: 24px;
+    border-radius: 60px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.mic-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+}
+
+.mic-button:active {
+    transform: scale(0.95);
+}
+
+/* Voice Feedback */
+.voice-feedback {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.voice-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.voice-text {
+    font-size: 18px;
+    color: #e0e0e0;
+    min-height: 60px;
+}
+
+/* Exam Status */
+.exam-status {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+#currentQuestion {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #667eea;
+}
+
+#paperInfo {
+    font-size: 14px;
+    color: #a0a0a0;
+}
+
+/* Listening Animation */
+.listening .voice-icon {
+    animation: listeningPulse 1s infinite;
+    color: #ff6b6b;
+}
+
+@keyframes listeningPulse {
+    0% { transform: scale(1); text-shadow: 0 0 0px rgba(255,107,107,0); }
+    50% { transform: scale(1.1); text-shadow: 0 0 20px rgba(255,107,107,0.5); }
+    100% { transform: scale(1); text-shadow: 0 0 0px rgba(255,107,107,0); }
+}
+
+/* Speaking Animation */
+.speaking .voice-icon {
+    animation: speakingPulse 0.5s infinite;
+    color: #51cf66;
+}
+
+@keyframes speakingPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Manual Controls (hidden by default, shown for debugging) */
+.manual-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.manual-controls button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .logo-section h1 { font-size: 36px; }
+    .mic-button { padding: 15px 30px; font-size: 20px; }
+    .voice-text { font-size: 16px; }
+}

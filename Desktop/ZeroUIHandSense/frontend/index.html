@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandSense - Voice Exam System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        h1 {
+            color: #00d4ff;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 25px;
+        }
+        button {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin: 8px 0;
+        }
+        button:hover {
+            transform: scale(1.02);
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+            margin: 8px 0;
+        }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 2.5rem;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #00d4ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mic-btn.listening {
+            background: #ff4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .status-listening {
+            background: rgba(255, 68, 68, 0.3);
+            color: #ff8888;
+        }
+        .status-speaking {
+            background: rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+        }
+        .status-idle {
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+        }
+        .heard-text {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: #00d4ff;
+            font-size: 1rem;
+            text-align: center;
+            word-wrap: break-word;
+        }
+        .paper-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+        .paper-card:hover {
+            background: rgba(0, 212, 255, 0.2);
+        }
+        .question-box {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .question-text {
+            color: white;
+            font-size: 1.2rem;
+            margin: 15px 0;
+        }
+        .answer-area {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            color: white;
+            min-height: 60px;
+        }
+        .flex {
+            display: flex;
+            gap: 10px;
+        }
+        .flex button {
+            flex: 1;
+            margin: 0;
+        }
+        .hidden {
+            display: none;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+        }
+        .toast.show {
+            display: block;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .logout-btn {
+            width: auto;
+            padding: 8px 16px;
+            background: #dc3545;
+        }
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .score-circle span {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <div class="card">
+                <h1>🎙️ HandSense</h1>
+                <p class="subtitle">Voice-Based Screenless Exam System</p>
+                
+                <div style="text-align: center;">
+                    <div class="mic-btn" id="micMain">🎤</div>
+                </div>
+                
+                <div id="statusMain" class="status status-idle">Click the mic and speak</div>
+                <div id="heardMain" class="heard-text">🎤 What you say will appear here...</div>
+                
+                <div style="text-align: center; color: #888; margin: 15px 0;">OR</div>
+                
+                <input type="text" id="rollNumber" placeholder="Roll Number: 2024001">
+                <input type="password" id="password" placeholder="Password: student123">
+                <button id="loginBtn">Login</button>
+                <button id="registerBtn" style="background: #6c757d;">Register New Student</button>
+                
+                <div class="status status-idle" style="margin-top: 15px; font-size: 0.8rem;">
+                    📝 Voice command: "Login roll number 2024001 password student123"
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div id="registerScreen" class="hidden">
+            <div class="card">
+                <h2 style="color: #00d4ff;">📝 Register New Student</h2>
+                <input type="text" id="regRollNumber" placeholder="Roll Number">
+                <input type="text" id="regName" placeholder="Full Name">
+                <input type="text" id="regClass" placeholder="Class (e.g., 12th Grade)">
+                <input type="password" id="regPassword" placeholder="Password (min 4 chars)">
+                <button id="submitRegisterBtn">Register</button>
+                <button id="backToLoginBtn" style="background: #6c757d;">Back to Login</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboardScreen" class="hidden">
+            <div class="card">
+                <div class="header">
+                    <h2 style="color: white;">Welcome, <span id="studentName">Student</span></h2>
+                    <button class="logout-btn" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 style="color: white;">📚 Available Papers</h3>
+                <div id="papersList">Loading...</div>
+            </div>
+            
+            <div style="text-align: center;">
+                <div class="mic-btn" id="micDash">🎤</div>
+            </div>
+            <div id="statusDash" class="status status-idle">Click mic and say "Select Mathematics paper"</div>
+            <div id="heardDash" class="heard-text">🎤 Voice commands appear here...</div>
+        </div>
+
+        <!-- Exam Screen -->
+        <div id="examScreen" class="hidden">
+            <div class="card">
+                <div class="header">
+                    <div>
+                        <h3 style="color: #00d4ff;" id="examTitle">Exam</h3>
+                        <span style="color: white;">Q<span id="qNum">1</span>/<span id="totalQ">0</span></span>
+                        <span style="color: white; margin-left: 15px;">⭐ <span id="qMarks">0</span></span>
+                    </div>
+                    <button id="exitExamBtn" style="width: auto; padding: 8px 16px; background: #ffc107; color: #333;">Exit</button>
+                </div>
+            </div>
+            
+            <div class="question-box">
+                <div style="font-size: 2rem;">❓</div>
+                <div class="question-text" id="questionText">Question will appear here</div>
+                <button id="repeatBtn" style="width: auto; padding: 8px 20px;">🔊 Repeat</button>
+            </div>
+            
+            <div class="card">
+                <h3 style="color: white;">Your Answer:</h3>
+                <div class="answer-area" id="answerDisplay">Speak your answer...</div>
+                <div class="flex">
+                    <button id="submitAnswerBtn" style="background: #28a745;">Submit Answer</button>
+                    <button id="nextBtn">Next →</button>
+                </div>
+            </div>
+            
+            <div class="flex">
+                <button id="submitExamBtn" style="background: #28a745;">✅ Submit Exam</button>
+                <button id="overExamBtn" style="background: #ffc107; color: #333;">⏹️ Over Exam</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 15px;">
+                <div class="mic-btn" id="micExam">🎤</div>
+            </div>
+            <div id="statusExam" class="status status-idle">Click mic for voice commands</div>
+            <div id="heardExam" class="heard-text">🎤 Voice commands appear here...</div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="hidden">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3rem;">🎉</div>
+                <h2 style="color: white;">Exam Completed!</h2>
+                <div class="score-circle">
+                    <span id="scorePercent">0%</span>
+                </div>
+                <p style="color: white;">Score: <strong id="scoreValue">0</strong> / <strong id="totalValue">0</strong></p>
+                <button id="dashboardBtn">Go to Dashboard</button>
+                <button id="exitSystemBtn" style="background: #dc3545;">Exit System</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // ============================================
+        // COMPLETE WORKING FRONTEND
+        // ============================================
+        
+        const API_URL = '/api';  // Relative path since frontend is served by backend
+        
+        // Variables
+        let authToken = null;
+        let sessionId = null;
+        let currentPaper = null;
+        let currentAnswer = '';
+        let currentUser = null;
+        let recognition = null;
+        let isListening = false;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, initializing...');
+            initSpeech();
+            setupButtons();
+            showToast('Welcome to HandSense! Click the mic button.', 'info');
+        });
+        
+        // Initialize speech recognition
+        function initSpeech() {
+            if (!('webkitSpeechRecognition' in window)) {
+                showToast('Voice recognition not supported. Use Chrome.', 'error');
+                return;
+            }
+            
+            const SpeechRecognition = window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-IN';
+            
+            recognition.onstart = () => {
+                isListening = true;
+                updateAllStatus('🎤 Listening... Speak now', 'listening');
+                document.querySelectorAll('.mic-btn').forEach(btn => {
+                    btn.classList.add('listening');
+                    btn.textContent = '🎙️';
+                });
+            };
+            
+            recognition.onend = () => {
+                isListening = false;
+                updateAllStatus('🎤 Click mic to speak', 'idle');
+                document.querySelectorAll('.mic-btn').forEach(btn => {
+                    btn.classList.remove('listening');
+                    btn.textContent = '🎤';
+                });
+            };
+            
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                console.log('Heard:', text);
+                updateAllHeard(text);
+                processCommand(text.toLowerCase());
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Error:', event.error);
+                updateAllStatus('🎤 Error: ' + event.error, 'idle');
+            };
+        }
+        
+        function startListening() {
+            if (!recognition) {
+                showToast('Voice not supported', 'error');
+                return;
+            }
+            try {
+                recognition.start();
+            } catch (e) {
+                console.log('Already listening');
+            }
+        }
+        
+        function updateAllStatus(msg, type) {
+            const statuses = ['statusMain', 'statusDash', 'statusExam'];
+            statuses.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.textContent = msg;
+                    el.className = `status status-${type}`;
+                }
+            });
+        }
+        
+        function updateAllHeard(text) {
+            const heardDivs = ['heardMain', 'heardDash', 'heardExam'];
+            heardDivs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = `🎤 "${text}"`;
+                }
+            });
+        }
+        
+        function speak(text) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-IN';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+            updateAllStatus(`🔊 ${text.substring(0, 40)}...`, 'speaking');
+        }
+        
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.background = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#17a2b8';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function showScreen(screen) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden');
+            document.getElementById('examScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById(`${screen}Screen`).classList.remove('hidden');
+        }
+        
+        async function processCommand(command) {
+            console.log('Command:', command);
+            
+            if (command.includes('exit')) {
+                await handleExit();
+                return;
+            }
+            
+            // Login command
+            if (command.includes('login')) {
+                const rollMatch = command.match(/roll number[\s]*([0-9]+)/i);
+                const passMatch = command.match(/password[\s]*([a-zA-Z0-9]+)/i);
+                
+                if (rollMatch && passMatch) {
+                    await login(rollMatch[1], passMatch[1]);
+                } else {
+                    speak('Please say: Login roll number 2024001 password student123');
+                }
+                return;
+            }
+            
+            // Register command
+            if (command.includes('register')) {
+                showScreen('register');
+                speak('Please fill the registration form');
+                return;
+            }
+            
+            const loginVisible = !document.getElementById('loginScreen').classList.contains('hidden');
+            const dashVisible = !document.getElementById('dashboardScreen').classList.contains('hidden');
+            const examVisible = !document.getElementById('examScreen').classList.contains('hidden');
+            
+            if (loginVisible) {
+                speak('Please login. Say: Login roll number 2024001 password student123');
+            }
+            else if (dashVisible) {
+                if (command.includes('select') || command.includes('choose')) {
+                    if (command.includes('math')) {
+                        currentPaper = { paperId: 'MATH101' };
+                        speak('Selected Mathematics paper. Say start paper to begin.');
+                        showToast('Paper selected! Say "Start Paper"', 'success');
+                    } else {
+                        speak('Say: Select Mathematics paper');
+                    }
+                }
+                else if (command.includes('start') && command.includes('paper')) {
+                    if (currentPaper) {
+                        await startExam();
+                    } else {
+                        speak('Please select a paper first');
+                    }
+                }
+                else {
+                    speak('Say: Select Mathematics paper, then say Start Paper');
+                }
+            }
+            else if (examVisible) {
+                if (command.includes('repeat')) {
+                    await repeatQuestion();
+                }
+                else if (command.includes('next')) {
+                    await nextQuestion();
+                }
+                else if (command.includes('submit answer')) {
+                    await submitAnswer();
+                }
+                else if (command.includes('submit exam')) {
+                    await submitExam();
+                }
+                else if (command.includes('over')) {
+                    await overExam();
+                }
+                else if (command.length > 2 && command.length < 100) {
+                    currentAnswer = command;
+                    document.getElementById('answerDisplay').innerHTML = `📝 "${command}"`;
+                    speak(`Your answer: ${command}. Say submit answer to confirm.`);
+                }
+                else {
+                    speak('Commands: Repeat, Next, Submit Answer, Submit Exam, Over Exam');
+                }
+            }
+        }
+        
+        async function login(rollNumber, password) {
+            showToast('Logging in...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rollNumber, password })
+                });
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.success) {
+                    authToken = data.data.token;
+                    currentUser = data.data.user;
+                    document.getElementById('studentName').textContent = currentUser.name;
+                    speak(`Welcome ${currentUser.name}!`);
+                    showToast('Login successful!', 'success');
+                    await loadPapers();
+                    showScreen('dashboard');
+                } else {
+                    speak(data.message || 'Login failed');
+                    showToast(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                speak('Cannot connect to server');
+                showToast('Server error: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadPapers() {
+            try {
+                const response = await fetch(`${API_URL}/exam/papers`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                console.log('Papers:', data);
+                
+                if (data.success && data.data) {
+                    const container = document.getElementById('papersList');
+                    container.innerHTML = '';
+                    data.data.forEach(paper => {
+                        const div = document.createElement('div');
+                        div.className = 'paper-card';
+                        div.innerHTML = `<strong>📄 ${paper.title}</strong><br>${paper.subject} | ${paper.duration} mins | ${paper.totalMarks} marks`;
+                        div.onclick = () => {
+                            currentPaper = { paperId: paper.paperId };
+                            speak(`Selected ${paper.title}. Say start paper to begin.`);
+                            showToast('Paper selected! Say "Start Paper"', 'success');
+                        };
+                        container.appendChild(div);
+                    });
+                }
+            } catch (error) {
+                console.error('Load papers error:', error);
+            }
+        }
+        
+        async function startExam() {
+            showToast('Starting exam...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/exam/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ paperId: currentPaper.paperId })
+                });
+                const data = await response.json();
+                console.log('Start exam:', data);
+                
+                if (data.success) {
+                    sessionId = data.data.sessionId;
+                    document.getElementById('totalQ').textContent = data.data.totalQuestions;
+                    document.getElementById('qNum').textContent = 1;
+                    document.getElementById('qMarks').textContent = data.data.currentQuestion.marks;
+                    document.getElementById('questionText').textContent = data.data.currentQuestion.text;
+                    showScreen('exam');
+                    speak(data.data.currentQuestion.text);
+                    speak(`This question is for ${data.data.currentQuestion.marks} marks. Please speak your answer.`);
+                } else {
+                    speak(data.message || 'Failed to start');
+                }
+            } catch (error) {
+                console.error('Start exam error:', error);
+                speak('Network error');
+            }
+        }
+        
+        async function repeatQuestion() {
+            try {
+                const response = await fetch(`${API_URL}/exam/current-question?sessionId=${sessionId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    speak(data.data.question.text);
+                }
+            } catch (error) {
+                console.error('Repeat error:', error);
+            }
+        }
+        
+        async function submitAnswer() {
+            if (!currentAnswer) {
+                speak('Please speak your answer first');
+                return;
+            }
+            showToast('Saving...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/exam/save-answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ sessionId, answer: currentAnswer })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    if (data.data.isCorrect) {
+                        speak(`Correct! You earned ${data.data.marksObtained} marks. Say next to continue.`);
+                    } else {
+                        speak('Answer saved. Say next to continue.');
+                    }
+                    showToast('Answer saved!', 'success');
+                    currentAnswer = '';
+                    document.getElementById('answerDisplay').innerHTML = 'Speak your answer...';
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                speak('Network error');
+            }
+        }
+        
+        async function nextQuestion() {
+            try {
+                const response = await fetch(`${API_URL}/exam/next`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+                const data = await response.json();
+                console.log('Next:', data);
+                
+                if (data.success) {
+                    if (data.isLastQuestion) {
+                        speak(data.message);
+                    } else {
+                        document.getElementById('qNum').textContent = data.data.questionNumber;
+                        document.getElementById('qMarks').textContent = data.data.currentQuestion.marks;
+                        document.getElementById('questionText').textContent = data.data.currentQuestion.text;
+                        currentAnswer = '';
+                        document.getElementById('answerDisplay').innerHTML = 'Speak your answer...';
+                        speak(data.data.currentQuestion.text);
+                        speak(`This question is for ${data.data.currentQuestion.marks} marks. Please speak your answer.`);
+                    }
+                }
+            } catch (error) {
+                console.error('Next error:', error);
+            }
+        }
+        
+        async function submitExam() {
+            speak('Submitting exam...');
+            try {
+                const response = await fetch(`${API_URL}/exam/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ sessionId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('scoreValue').textContent = data.data.score;
+                    document.getElementById('totalValue').textContent = data.data.totalMarks;
+                    document.getElementById('scorePercent').textContent = data.data.percentage + '%';
+                    showScreen('results');
+                    speak(`Exam submitted! You scored ${data.data.score} out of ${data.data.totalMarks}.`);
+                }
+            } catch (error) {
+                console.error('Submit exam error:', error);
+            }
+        }
+        
+        async function overExam() {
+            if (sessionId) {
+                try {
+                    await fetch(`${API_URL}/exam/over`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                        body: JSON.stringify({ sessionId })
+                    });
+                } catch (e) {}
+            }
+            sessionId = null;
+            currentPaper = null;
+            showScreen('dashboard');
+            loadPapers();
+            speak('Exam session ended.');
+        }
+        
+        async function handleLogout() {
+            authToken = null;
+            currentUser = null;
+            sessionId = null;
+            showScreen('login');
+            speak('Logged out.');
+        }
+        
+        async function handleExit() {
+            speak('Goodbye!');
+            authToken = null;
+            showScreen('login');
+        }
+        
+        function setupButtons() {
+            // Mic buttons
+            document.querySelectorAll('.mic-btn').forEach(btn => {
+                btn.onclick = startListening;
+            });
+            
+            // Login
+            document.getElementById('loginBtn').onclick = () => {
+                const roll = document.getElementById('rollNumber').value;
+                const pass = document.getElementById('password').value;
+                login(roll, pass);
+            };
+            
+            // Register
+            document.getElementById('registerBtn').onclick = () => showScreen('register');
+            document.getElementById('backToLoginBtn').onclick = () => showScreen('login');
+            document.getElementById('submitRegisterBtn').onclick = async () => {
+                const roll = document.getElementById('regRollNumber').value;
+                const name = document.getElementById('regName').value;
+                const className = document.getElementById('regClass').value;
+                const pass = document.getElementById('regPassword').value;
+                
+                try {
+                    const response = await fetch(`${API_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rollNumber: roll, name, class: className, password: pass })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('Registration successful! Please login.', 'success');
+                        speak('Registration successful! Please login.');
+                        showScreen('login');
+                    } else {
+                        showToast(data.message, 'error');
+                        speak(data.message);
+                    }
+                } catch (error) {
+                    showToast('Registration failed', 'error');
+                }
+            };
+            
+            // Logout
+            document.getElementById('logoutBtn').onclick = handleLogout;
+            
+            // Exam buttons
+            document.getElementById('repeatBtn').onclick = repeatQuestion;
+            document.getElementById('submitAnswerBtn').onclick = submitAnswer;
+            document.getElementById('nextBtn').onclick = nextQuestion;
+            document.getElementById('submitExamBtn').onclick = submitExam;
+            document.getElementById('overExamBtn').onclick = overExam;
+            document.getElementById('exitExamBtn').onclick = overExam;
+            
+            // Results buttons
+            document.getElementById('dashboardBtn').onclick = () => {
+                showScreen('dashboard');
+                loadPapers();
+            };
+            document.getElementById('exitSystemBtn').onclick = handleExit;
+        }
+        
+        console.log('Frontend ready!');
+    </script>
+</body>
+</html>

@@ -1,6 +1,4 @@
 // controllers/examController.js
-// Complete working version
-
 const QuestionPaper = require('../models/QuestionPaper');
 const ExamSession = require('../models/ExamSession');
 const jwt = require('jsonwebtoken');
@@ -9,7 +7,7 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 const getUserIdFromToken = (token) => {
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'handsense_secret_key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         return decoded.id;
     } catch (error) {
         return null;
@@ -127,6 +125,7 @@ const saveAnswer = async (req, res) => {
         const questions = await QuestionPaper.getQuestions(paper.id);
         const currentQuestion = questions[session.current_question_index];
 
+        // Simple evaluation
         let isCorrect = false;
         let marksObtained = 0;
         
@@ -173,7 +172,7 @@ const nextQuestion = async (req, res) => {
         }
 
         await ExamSession.nextQuestion(sessionId, session.current_question_index);
-        const nextQuestionData = questions[nextIndex];
+        const nextQuestion = questions[nextIndex];
 
         res.json({
             success: true,
@@ -183,8 +182,8 @@ const nextQuestion = async (req, res) => {
                 questionNumber: nextIndex + 1,
                 totalQuestions: questions.length,
                 currentQuestion: {
-                    text: nextQuestionData.question_text,
-                    marks: nextQuestionData.marks
+                    text: nextQuestion.question_text,
+                    marks: nextQuestion.marks
                 }
             }
         });
