@@ -1,6 +1,5 @@
-
 // database/seed-mysql.js
-// Seed MySQL database with sample data for testing
+// Seed MySQL database with sample data for testing - GK PAPER VERSION
 
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
@@ -43,13 +42,18 @@ async function seedDatabase() {
         );
         console.log('✅ Created student: 2024001 / student123');
         
-        // Insert questions
+        // Insert GK questions (General Knowledge)
         const questions = [
-            ['Q001', 'What is 2 + 2?', 5, 'numerical', '4', 'Mathematics', 'easy'],
-            ['Q002', 'Explain the Pythagorean theorem in your own words.', 10, 'descriptive', 'In a right triangle, the square of the hypotenuse equals sum of squares of other two sides', 'Mathematics', 'medium'],
-            ['Q003', 'What is the capital of France?', 5, 'descriptive', 'Paris', 'Geography', 'easy'],
-            ['Q004', 'Solve: 15 × 3 = ?', 5, 'numerical', '45', 'Mathematics', 'easy'],
-            ['Q005', 'What is the square root of 144?', 5, 'numerical', '12', 'Mathematics', 'medium']
+            ['GK001', 'What is the capital of India?', 5, 'descriptive', 'New Delhi', 'General Knowledge', 'easy'],
+            ['GK002', 'Who is known as the Father of the Nation in India?', 5, 'descriptive', 'Mahatma Gandhi', 'General Knowledge', 'easy'],
+            ['GK003', 'What is the national animal of India?', 5, 'descriptive', 'Tiger', 'General Knowledge', 'easy'],
+            ['GK004', 'Which planet is known as the Red Planet?', 5, 'descriptive', 'Mars', 'General Knowledge', 'easy'],
+            ['GK005', 'Who wrote the Indian national anthem?', 5, 'descriptive', 'Rabindranath Tagore', 'General Knowledge', 'medium'],
+            ['GK006', 'What is the longest river in India?', 5, 'descriptive', 'Ganges', 'General Knowledge', 'medium'],
+            ['GK007', 'Which is the largest desert in the world?', 5, 'descriptive', 'Sahara Desert', 'General Knowledge', 'medium'],
+            ['GK008', 'Who was the first Prime Minister of India?', 5, 'descriptive', 'Jawaharlal Nehru', 'General Knowledge', 'easy'],
+            ['GK009', 'What is the national flower of India?', 5, 'descriptive', 'Lotus', 'General Knowledge', 'easy'],
+            ['GK010', 'Which is the smallest ocean in the world?', 5, 'descriptive', 'Arctic Ocean', 'General Knowledge', 'medium']
         ];
         
         const questionIds = [];
@@ -60,12 +64,12 @@ async function seedDatabase() {
             );
             questionIds.push(result.insertId);
         }
-        console.log(`✅ Inserted ${questions.length} questions`);
+        console.log(`✅ Inserted ${questions.length} GK questions`);
         
-        // Insert question paper
+        // Insert question paper - GK PAPER
         const [paperResult] = await connection.execute(
             'INSERT INTO question_papers (paper_id, title, subject, description, duration, total_marks) VALUES (?, ?, ?, ?, ?, ?)',
-            ['MATH101', 'Mathematics Final Examination', 'Mathematics', 'This paper tests basic mathematical concepts', 60, 30]
+            ['GK101', 'General Knowledge Examination', 'General Knowledge', 'Test your knowledge about India and the world', 60, 50]
         );
         const paperId = paperResult.insertId;
         
@@ -77,15 +81,20 @@ async function seedDatabase() {
             );
         }
         
-        console.log(`✅ Created question paper: Mathematics Final Examination`);
-        console.log(`   Paper ID: MATH101`);
+        console.log(`✅ Created question paper: General Knowledge Examination`);
+        console.log(`   Paper ID: GK101`);
+        console.log(`   Subject: General Knowledge`);
         console.log(`   Total Questions: ${questions.length}`);
+        console.log(`   Total Marks: 50`);
         
         console.log('\n🎉 Database seeding completed successfully!');
         console.log('\n📝 You can now:');
         console.log('   1. Start the server: cd backend && node server.js');
         console.log('   2. Login with roll number: 2024001 and password: student123');
-        console.log('   3. Select paper: MATH101');
+        console.log('   3. Select paper: GK101 (General Knowledge)');
+        console.log('\n🎤 Voice Commands:');
+        console.log('   - "Select GK paper" or "Select General Knowledge paper"');
+        console.log('   - "Begin paper" to start the exam');
         
     } catch (error) {
         console.error('❌ Seeding failed:', error.message);

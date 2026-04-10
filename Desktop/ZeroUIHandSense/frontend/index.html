@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HandSense - Voice Exam System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>HandSense - Voice Exam System for Visually Impaired</title>
     <style>
         * {
             margin: 0;
@@ -14,31 +14,52 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
         }
+        .mic-fixed {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        .mic-btn-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+        .mic-btn-large.listening {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
         .card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255,255,255,0.2);
         }
-        h1 {
-            color: #00d4ff;
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #aaa;
-            margin-bottom: 25px;
-        }
+        .first-card { margin-top: 100px; }
+        h1 { color: #00d4ff; text-align: center; font-size: 2.5rem; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #aaa; margin-bottom: 25px; }
         button {
             background: linear-gradient(135deg, #00d4ff, #0099cc);
             color: white;
@@ -50,141 +71,83 @@
             width: 100%;
             margin: 8px 0;
         }
-        button:hover {
-            transform: scale(1.02);
-        }
         input {
             width: 100%;
             padding: 12px;
             border: none;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.2);
             color: white;
             font-size: 1rem;
             margin: 8px 0;
         }
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-        .mic-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            font-size: 2.5rem;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #00d4ff;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .mic-btn.listening {
-            background: #ff4444;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .status {
-            text-align: center;
-            padding: 10px;
+        .status-area {
+            background: rgba(0,0,0,0.3);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            margin: 15px 0;
             border-radius: 10px;
-            margin: 10px 0;
         }
-        .status-listening {
-            background: rgba(255, 68, 68, 0.3);
-            color: #ff8888;
-        }
-        .status-speaking {
-            background: rgba(0, 212, 255, 0.3);
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: bold;
             color: #00d4ff;
-        }
-        .status-idle {
-            background: rgba(255, 255, 255, 0.1);
-            color: #aaa;
         }
         .heard-text {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px 0;
+            color: #00d4ff;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .paper-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 12px 0;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .paper-card:hover { background: rgba(0,212,255,0.2); }
+        .paper-card h3 { color: #00d4ff; margin-bottom: 5px; }
+        .question-box {
+            background: rgba(0,212,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        .question-text { color: white; font-size: 1.3rem; line-height: 1.4; margin: 15px 0; }
+        .answer-area {
+            background: rgba(255,255,255,0.05);
             padding: 15px;
             border-radius: 10px;
             margin: 15px 0;
             color: #00d4ff;
-            font-size: 1rem;
-            text-align: center;
-            word-wrap: break-word;
-        }
-        .paper-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 12px;
-            margin: 8px 0;
-            cursor: pointer;
-        }
-        .paper-card:hover {
-            background: rgba(0, 212, 255, 0.2);
-        }
-        .question-box {
-            background: rgba(0, 212, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 15px 0;
-        }
-        .question-text {
-            color: white;
             font-size: 1.2rem;
-            margin: 15px 0;
+            min-height: 70px;
         }
-        .answer-area {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            color: white;
-            min-height: 60px;
-        }
-        .flex {
-            display: flex;
-            gap: 10px;
-        }
-        .flex button {
-            flex: 1;
-            margin: 0;
-        }
-        .hidden {
-            display: none;
-        }
+        .flex { display: flex; gap: 10px; }
+        .flex button { flex: 1; margin: 0; }
+        .hidden { display: none; }
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: #333;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
             display: none;
             z-index: 1000;
         }
-        .toast.show {
-            display: block;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .logout-btn {
-            width: auto;
-            padding: 8px 16px;
-            background: #dc3545;
-        }
+        .toast.show { display: block; }
         .score-circle {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             background: linear-gradient(135deg, #00d4ff, #0099cc);
             display: flex;
@@ -192,140 +155,143 @@
             justify-content: center;
             margin: 20px auto;
         }
-        .score-circle span {
-            font-size: 2rem;
-            font-weight: bold;
-            color: white;
+        .score-circle span { font-size: 2.5rem; font-weight: bold; color: white; }
+        .command-list {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        .command-list h3 { color: #00d4ff; margin-bottom: 10px; }
+        .command-list li { margin: 5px 0; color: #ccc; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .logout-btn { width: auto; padding: 8px 16px; background: #dc3545; }
+        @media (max-width: 600px) {
+            .mic-btn-large { width: 65px; height: 65px; font-size: 2.5rem; }
+            .question-text { font-size: 1.1rem; }
+            .flex { flex-direction: column; }
+            .card { margin-top: 90px; }
+            h1 { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
+    <div class="mic-fixed">
+        <div class="mic-btn-large" id="globalMicBtn">🎤</div>
+    </div>
+    
     <div class="container">
-        <!-- Login Screen -->
         <div id="loginScreen">
-            <div class="card">
+            <div class="card first-card">
                 <h1>🎙️ HandSense</h1>
-                <p class="subtitle">Voice-Based Screenless Exam System</p>
-                
-                <div style="text-align: center;">
-                    <div class="mic-btn" id="micMain">🎤</div>
+                <p class="subtitle">Voice Exam System for Visually Impaired</p>
+                <div class="status-area">
+                    <div class="status-text" id="statusText">✅ System ready</div>
+                    <div class="heard-text" id="heardText">🎤 Your voice will appear here</div>
                 </div>
-                
-                <div id="statusMain" class="status status-idle">Click the mic and speak</div>
-                <div id="heardMain" class="heard-text">🎤 What you say will appear here...</div>
-                
-                <div style="text-align: center; color: #888; margin: 15px 0;">OR</div>
-                
-                <input type="text" id="rollNumber" placeholder="Roll Number: 2024001">
-                <input type="password" id="password" placeholder="Password: student123">
+                <div class="command-list">
+                    <h3>📢 Voice Commands:</h3>
+                    <ul>
+                        <li><strong>"Login roll number 2024001 password student123"</strong></li>
+                        <li><strong>"Help"</strong></li>
+                    </ul>
+                </div>
+                <input type="text" id="rollNumber" placeholder="Roll Number">
+                <input type="password" id="password" placeholder="Password">
                 <button id="loginBtn">Login</button>
-                <button id="registerBtn" style="background: #6c757d;">Register New Student</button>
-                
-                <div class="status status-idle" style="margin-top: 15px; font-size: 0.8rem;">
-                    📝 Voice command: "Login roll number 2024001 password student123"
-                </div>
             </div>
         </div>
 
-        <!-- Register Screen -->
-        <div id="registerScreen" class="hidden">
-            <div class="card">
-                <h2 style="color: #00d4ff;">📝 Register New Student</h2>
-                <input type="text" id="regRollNumber" placeholder="Roll Number">
-                <input type="text" id="regName" placeholder="Full Name">
-                <input type="text" id="regClass" placeholder="Class (e.g., 12th Grade)">
-                <input type="password" id="regPassword" placeholder="Password (min 4 chars)">
-                <button id="submitRegisterBtn">Register</button>
-                <button id="backToLoginBtn" style="background: #6c757d;">Back to Login</button>
-            </div>
-        </div>
-
-        <!-- Dashboard Screen -->
         <div id="dashboardScreen" class="hidden">
             <div class="card">
                 <div class="header">
                     <h2 style="color: white;">Welcome, <span id="studentName">Student</span></h2>
                     <button class="logout-btn" id="logoutBtn">Logout</button>
                 </div>
+                <div class="status-area">
+                    <div class="status-text" id="statusTextDash">Say "Select GK paper" to begin</div>
+                    <div class="heard-text" id="heardTextDash">🎤 Voice commands appear here</div>
+                </div>
             </div>
-            
             <div class="card">
                 <h3 style="color: white;">📚 Available Papers</h3>
                 <div id="papersList">Loading...</div>
             </div>
-            
-            <div style="text-align: center;">
-                <div class="mic-btn" id="micDash">🎤</div>
+            <div class="command-list">
+                <h3>📢 Voice Commands:</h3>
+                <ul>
+                    <li><strong>"Select GK paper"</strong></li>
+                    <li><strong>"Begin paper"</strong></li>
+                    <li><strong>"Logout"</strong></li>
+                    <li><strong>"Help"</strong></li>
+                </ul>
             </div>
-            <div id="statusDash" class="status status-idle">Click mic and say "Select Mathematics paper"</div>
-            <div id="heardDash" class="heard-text">🎤 Voice commands appear here...</div>
         </div>
 
-        <!-- Exam Screen -->
         <div id="examScreen" class="hidden">
             <div class="card">
                 <div class="header">
                     <div>
-                        <h3 style="color: #00d4ff;" id="examTitle">Exam</h3>
-                        <span style="color: white;">Q<span id="qNum">1</span>/<span id="totalQ">0</span></span>
-                        <span style="color: white; margin-left: 15px;">⭐ <span id="qMarks">0</span></span>
+                        <h3 style="color: #00d4ff;" id="examTitle">GK Exam</h3>
+                        <p style="color: white;">Question <span id="qNum">1</span> of <span id="totalQ">0</span> | Marks: <span id="qMarks">0</span></p>
                     </div>
-                    <button id="exitExamBtn" style="width: auto; padding: 8px 16px; background: #ffc107; color: #333;">Exit</button>
+                    <button id="exitExamBtn" style="background: #ffc107; color: #333;">Exit</button>
                 </div>
             </div>
-            
             <div class="question-box">
-                <div style="font-size: 2rem;">❓</div>
-                <div class="question-text" id="questionText">Question will appear here</div>
-                <button id="repeatBtn" style="width: auto; padding: 8px 20px;">🔊 Repeat</button>
+                <div class="question-text" id="questionText">Question will be read aloud</div>
+                <button id="repeatBtn">🔊 Repeat Question</button>
             </div>
-            
             <div class="card">
                 <h3 style="color: white;">Your Answer:</h3>
-                <div class="answer-area" id="answerDisplay">Speak your answer...</div>
+                <div class="answer-area" id="answerDisplay">Speak your answer</div>
                 <div class="flex">
                     <button id="submitAnswerBtn" style="background: #28a745;">Submit Answer</button>
                     <button id="nextBtn">Next →</button>
                 </div>
             </div>
-            
             <div class="flex">
                 <button id="submitExamBtn" style="background: #28a745;">✅ Submit Exam</button>
                 <button id="overExamBtn" style="background: #ffc107; color: #333;">⏹️ Over Exam</button>
             </div>
-            
-            <div style="text-align: center; margin-top: 15px;">
-                <div class="mic-btn" id="micExam">🎤</div>
+            <div class="status-area">
+                <div class="status-text" id="statusTextExam">Listening for your answer</div>
+                <div class="heard-text" id="heardTextExam">🎤 Your voice appears here</div>
             </div>
-            <div id="statusExam" class="status status-idle">Click mic for voice commands</div>
-            <div id="heardExam" class="heard-text">🎤 Voice commands appear here...</div>
+            <div class="command-list">
+                <h3>📢 Voice Commands:</h3>
+                <ul>
+                    <li><strong>Speak your answer</strong></li>
+                    <li><strong>"Submit answer"</strong></li>
+                    <li><strong>"Next"</strong></li>
+                    <li><strong>"Repeat"</strong></li>
+                    <li><strong>"Submit exam"</strong></li>
+                    <li><strong>"Over exam"</strong></li>
+                </ul>
+            </div>
         </div>
 
-        <!-- Results Screen -->
         <div id="resultsScreen" class="hidden">
             <div class="card" style="text-align: center;">
                 <div style="font-size: 3rem;">🎉</div>
                 <h2 style="color: white;">Exam Completed!</h2>
-                <div class="score-circle">
-                    <span id="scorePercent">0%</span>
-                </div>
-                <p style="color: white;">Score: <strong id="scoreValue">0</strong> / <strong id="totalValue">0</strong></p>
+                <div class="score-circle"><span id="scorePercent">0%</span></div>
+                <p style="color: white; font-size: 1.2rem;">Score: <strong id="scoreValue">0</strong> / <strong id="totalValue">0</strong></p>
                 <button id="dashboardBtn">Go to Dashboard</button>
-                <button id="exitSystemBtn" style="background: #dc3545;">Exit System</button>
+                <button id="exitSystemBtn">Exit</button>
             </div>
         </div>
     </div>
-    
     <div id="toast" class="toast"></div>
 
     <script>
         // ============================================
-        // COMPLETE WORKING FRONTEND
+        // HANDSENSE - COMPLETE WORKING SYSTEM
+        // AUTO-MIC: Microphone turns ON automatically after system speaks
         // ============================================
         
-        const API_URL = '/api';  // Relative path since frontend is served by backend
+        const API_URL = '/api';
         
-        // Variables
         let authToken = null;
         let sessionId = null;
         let currentPaper = null;
@@ -333,19 +299,117 @@
         let currentUser = null;
         let recognition = null;
         let isListening = false;
+        let currentQuestionText = '';
+        let currentQuestionMarks = 0;
+        let currentQuestionNumber = 0;
+        let totalQuestions = 0;
+        let isSpeaking = false;
         
-        // Initialize
+        const globalMicBtn = document.getElementById('globalMicBtn');
+        
+        // ============================================
+        // SPEECH FUNCTION WITH AUTO-MIC
+        // After speaking, automatically starts listening
+        // ============================================
+        function speakMessage(text, callback) {
+            if (!window.speechSynthesis) {
+                console.log('TTS not supported');
+                if (callback) callback();
+                return;
+            }
+            
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-IN';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            isSpeaking = true;
+            
+            utterance.onstart = () => {
+                console.log('Speaking:', text);
+                updateStatus('🔊 System speaking...', 'speaking');
+            };
+            
+            utterance.onend = () => {
+                console.log('Speech ended');
+                isSpeaking = false;
+                updateStatus('🎤 Microphone active. Say a command...', 'idle');
+                // AUTO-MIC: Start listening after speaking
+                setTimeout(() => startListening(), 500);
+                if (callback) callback();
+            };
+            
+            utterance.onerror = () => {
+                isSpeaking = false;
+                setTimeout(() => startListening(), 500);
+                if (callback) callback();
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // Short messages without callback
+        function speakQuick(text) {
+            speakMessage(text, null);
+        }
+        
+        // ============================================
+        // READ QUESTION WITH AUTO-MIC AFTER
+        // ============================================
+        function readQuestion() {
+            const message = `Question ${currentQuestionNumber} of ${totalQuestions}. ${currentQuestionText}. This question is worth ${currentQuestionMarks} marks. Please speak your answer now.`;
+            
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'en-IN';
+            utterance.rate = 0.85;
+            utterance.pitch = 1;
+            
+            utterance.onstart = () => {
+                updateStatus(`🔊 Speaking question ${currentQuestionNumber}...`, 'speaking');
+                isSpeaking = true;
+            };
+            
+            utterance.onend = () => {
+                isSpeaking = false;
+                updateStatus('🎤 Listening for your answer...', 'idle');
+                // AUTO-MIC: Start listening immediately after question
+                setTimeout(() => startListening(), 500);
+            };
+            
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Page loaded, initializing...');
+            console.log('HandSense Loading...');
             initSpeech();
             setupButtons();
-            showToast('Welcome to HandSense! Click the mic button.', 'info');
+            
+            // Welcome message sequence with auto-mic after each
+            setTimeout(() => {
+                speakMessage('Welcome to HandSense, the voice-based exam system for visually impaired students.', () => {
+                    setTimeout(() => {
+                        speakMessage('The microphone is active. You can speak your commands.', () => {
+                            setTimeout(() => {
+                                speakMessage('Say Login to begin, or say Help for commands.', () => {
+                                    startListening();
+                                });
+                            }, 1000);
+                        });
+                    }, 1000);
+                });
+            }, 1000);
         });
         
-        // Initialize speech recognition
         function initSpeech() {
             if (!('webkitSpeechRecognition' in window)) {
-                showToast('Voice recognition not supported. Use Chrome.', 'error');
+                alert('Voice recognition not supported. Please use Chrome.');
                 return;
             }
             
@@ -357,120 +421,129 @@
             
             recognition.onstart = () => {
                 isListening = true;
-                updateAllStatus('🎤 Listening... Speak now', 'listening');
-                document.querySelectorAll('.mic-btn').forEach(btn => {
-                    btn.classList.add('listening');
-                    btn.textContent = '🎙️';
-                });
+                updateStatus('🎤 Listening... Speak now', 'listening');
+                if (globalMicBtn) globalMicBtn.classList.add('listening');
+                console.log('🎤 Microphone ON - Listening');
             };
             
             recognition.onend = () => {
                 isListening = false;
-                updateAllStatus('🎤 Click mic to speak', 'idle');
-                document.querySelectorAll('.mic-btn').forEach(btn => {
-                    btn.classList.remove('listening');
-                    btn.textContent = '🎤';
-                });
+                if (!isSpeaking) {
+                    updateStatus('🎤 Microphone active. Say a command...', 'idle');
+                }
+                if (globalMicBtn) globalMicBtn.classList.remove('listening');
+                console.log('🎤 Microphone OFF');
             };
             
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
                 console.log('Heard:', text);
-                updateAllHeard(text);
+                updateHeard(text);
+                speakQuick(`You said: ${text}`);
                 processCommand(text.toLowerCase());
             };
             
             recognition.onerror = (event) => {
                 console.error('Error:', event.error);
-                updateAllStatus('🎤 Error: ' + event.error, 'idle');
+                if (event.error === 'not-allowed') {
+                    speakMessage('Microphone access denied. Please click the mic button and allow access.');
+                } else if (event.error === 'no-speech') {
+                    // No speech detected, restart listening
+                    setTimeout(() => startListening(), 500);
+                }
             };
         }
         
         function startListening() {
-            if (!recognition) {
-                showToast('Voice not supported', 'error');
-                return;
-            }
+            if (!recognition) return;
+            if (isListening) return;
+            if (isSpeaking) return;
+            
             try {
                 recognition.start();
-            } catch (e) {
-                console.log('Already listening');
+                console.log('🎤 Auto-listening started');
+            } catch(e) { 
+                console.log('Error starting:', e);
+                // Retry after a short delay
+                setTimeout(() => {
+                    try {
+                        recognition.start();
+                    } catch(err) {
+                        console.log('Retry failed:', err);
+                    }
+                }, 1000);
             }
         }
         
-        function updateAllStatus(msg, type) {
-            const statuses = ['statusMain', 'statusDash', 'statusExam'];
-            statuses.forEach(id => {
+        if (globalMicBtn) {
+            globalMicBtn.onclick = startListening;
+        }
+        
+        function updateStatus(msg, type) {
+            const els = ['statusText', 'statusTextDash', 'statusTextExam'];
+            els.forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.textContent = msg;
-                    el.className = `status status-${type}`;
-                }
+                if (el) el.textContent = msg;
             });
         }
         
-        function updateAllHeard(text) {
-            const heardDivs = ['heardMain', 'heardDash', 'heardExam'];
-            heardDivs.forEach(id => {
+        function updateHeard(text) {
+            const els = ['heardText', 'heardTextDash', 'heardTextExam'];
+            els.forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.innerHTML = `🎤 "${text}"`;
-                }
+                if (el) el.innerHTML = `🎤 "${text}"`;
             });
         }
         
-        function speak(text) {
-            if (!window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-IN';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
-            updateAllStatus(`🔊 ${text.substring(0, 40)}...`, 'speaking');
-        }
-        
-        function showToast(msg, type) {
+        function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
-            toast.style.background = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#17a2b8';
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
         
         function showScreen(screen) {
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('dashboardScreen').classList.add('hidden');
             document.getElementById('examScreen').classList.add('hidden');
             document.getElementById('resultsScreen').classList.add('hidden');
             document.getElementById(`${screen}Screen`).classList.remove('hidden');
+            
+            if (screen === 'login') {
+                speakMessage('Login screen. Say Login roll number 2024001 password student123');
+            } else if (screen === 'dashboard') {
+                speakMessage('Dashboard. You are logged in. Say Select GK paper to choose your exam.');
+            } else if (screen === 'exam') {
+                speakMessage('Exam screen. Questions will be read aloud.');
+            }
         }
         
         async function processCommand(command) {
             console.log('Command:', command);
+            
+            if (command.includes('help')) {
+                provideHelp();
+                return;
+            }
             
             if (command.includes('exit')) {
                 await handleExit();
                 return;
             }
             
-            // Login command
-            if (command.includes('login')) {
-                const rollMatch = command.match(/roll number[\s]*([0-9]+)/i);
-                const passMatch = command.match(/password[\s]*([a-zA-Z0-9]+)/i);
-                
-                if (rollMatch && passMatch) {
-                    await login(rollMatch[1], passMatch[1]);
-                } else {
-                    speak('Please say: Login roll number 2024001 password student123');
-                }
+            if (command.includes('logout')) {
+                await handleLogout();
                 return;
             }
             
-            // Register command
-            if (command.includes('register')) {
-                showScreen('register');
-                speak('Please fill the registration form');
+            if (command.includes('login')) {
+                const rollMatch = command.match(/roll number[\s]*([0-9a-zA-Z]+)/i);
+                const passMatch = command.match(/password[\s]*([a-zA-Z0-9]+)/i);
+                if (rollMatch && passMatch) {
+                    await login(rollMatch[1], passMatch[1]);
+                } else {
+                    speakMessage('Please say: Login roll number 2024001 password student123');
+                }
                 return;
             }
             
@@ -479,34 +552,39 @@
             const examVisible = !document.getElementById('examScreen').classList.contains('hidden');
             
             if (loginVisible) {
-                speak('Please login. Say: Login roll number 2024001 password student123');
+                speakMessage('Please login first. Say Login roll number 2024001 password student123');
             }
             else if (dashVisible) {
                 if (command.includes('select') || command.includes('choose')) {
-                    if (command.includes('math')) {
-                        currentPaper = { paperId: 'MATH101' };
-                        speak('Selected Mathematics paper. Say start paper to begin.');
-                        showToast('Paper selected! Say "Start Paper"', 'success');
+                    if (command.includes('gk') || command.includes('general knowledge')) {
+                        currentPaper = { paperId: 'GK101' };
+                        speakMessage('Selected GK paper. Say begin paper to start your exam.');
+                        showToast('GK paper selected!');
                     } else {
-                        speak('Say: Select Mathematics paper');
+                        speakMessage('Say: Select GK paper');
                     }
                 }
-                else if (command.includes('start') && command.includes('paper')) {
+                else if (command.includes('begin') && command.includes('paper')) {
                     if (currentPaper) {
+                        speakMessage('Starting exam. Please wait.');
                         await startExam();
                     } else {
-                        speak('Please select a paper first');
+                        speakMessage('Please select a paper first. Say Select GK paper.');
                     }
                 }
                 else {
-                    speak('Say: Select Mathematics paper, then say Start Paper');
+                    speakMessage('Say Select GK paper, then say Begin paper. Say Help for commands.');
                 }
             }
             else if (examVisible) {
                 if (command.includes('repeat')) {
-                    await repeatQuestion();
+                    if (currentQuestionText) {
+                        speakQuick('Repeating the question.');
+                        readQuestion();
+                    }
                 }
                 else if (command.includes('next')) {
+                    speakQuick('Moving to next question.');
                     await nextQuestion();
                 }
                 else if (command.includes('submit answer')) {
@@ -515,22 +593,36 @@
                 else if (command.includes('submit exam')) {
                     await submitExam();
                 }
-                else if (command.includes('over')) {
+                else if (command.includes('over exam')) {
                     await overExam();
                 }
                 else if (command.length > 2 && command.length < 100) {
                     currentAnswer = command;
                     document.getElementById('answerDisplay').innerHTML = `📝 "${command}"`;
-                    speak(`Your answer: ${command}. Say submit answer to confirm.`);
+                    speakMessage(`Your answer is: ${command}. Say submit answer to confirm.`);
                 }
                 else {
-                    speak('Commands: Repeat, Next, Submit Answer, Submit Exam, Over Exam');
+                    speakMessage('Say Next, Repeat, Submit Answer, Submit Exam, or Over Exam. Say Help for more.');
                 }
             }
         }
         
+        function provideHelp() {
+            const dashVisible = !document.getElementById('dashboardScreen').classList.contains('hidden');
+            const examVisible = !document.getElementById('examScreen').classList.contains('hidden');
+            
+            if (dashVisible) {
+                speakMessage('To select a paper, say Select GK paper. Then to start, say Begin paper. To logout, say Logout.');
+            } else if (examVisible) {
+                speakMessage('Speak your answer. Then say Submit answer to confirm. Say Next for next question. Say Repeat to hear question again. Say Submit exam to finish.');
+            } else {
+                speakMessage('To login, say Login roll number 2024001 password student123. To exit, say Exit.');
+            }
+        }
+        
         async function login(rollNumber, password) {
-            showToast('Logging in...', 'info');
+            speakMessage('Logging in. Please wait.');
+            
             try {
                 const response = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
@@ -538,24 +630,20 @@
                     body: JSON.stringify({ rollNumber, password })
                 });
                 const data = await response.json();
-                console.log('Login response:', data);
                 
                 if (data.success) {
                     authToken = data.data.token;
                     currentUser = data.data.user;
                     document.getElementById('studentName').textContent = currentUser.name;
-                    speak(`Welcome ${currentUser.name}!`);
-                    showToast('Login successful!', 'success');
+                    speakMessage(`Welcome ${currentUser.name}! You are now logged in.`);
+                    showToast('Login successful!');
                     await loadPapers();
                     showScreen('dashboard');
                 } else {
-                    speak(data.message || 'Login failed');
-                    showToast(data.message, 'error');
+                    speakMessage(data.message || 'Login failed. Please check your credentials.');
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                speak('Cannot connect to server');
-                showToast('Server error: ' + error.message, 'error');
+                speakMessage('Cannot connect to server. Please make sure backend is running on port 5000.');
             }
         }
         
@@ -565,7 +653,6 @@
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 const data = await response.json();
-                console.log('Papers:', data);
                 
                 if (data.success && data.data) {
                     const container = document.getElementById('papersList');
@@ -573,14 +660,14 @@
                     data.data.forEach(paper => {
                         const div = document.createElement('div');
                         div.className = 'paper-card';
-                        div.innerHTML = `<strong>📄 ${paper.title}</strong><br>${paper.subject} | ${paper.duration} mins | ${paper.totalMarks} marks`;
+                        div.innerHTML = `<h3>📄 ${paper.title}</h3><p>${paper.subject} | ${paper.duration} mins | ${paper.totalMarks} marks</p>`;
                         div.onclick = () => {
                             currentPaper = { paperId: paper.paperId };
-                            speak(`Selected ${paper.title}. Say start paper to begin.`);
-                            showToast('Paper selected! Say "Start Paper"', 'success');
+                            speakMessage(`Selected ${paper.title}. Say begin paper to start.`);
                         };
                         container.appendChild(div);
                     });
+                    speakMessage('Available papers loaded. Say Select GK paper to begin.');
                 }
             } catch (error) {
                 console.error('Load papers error:', error);
@@ -588,7 +675,6 @@
         }
         
         async function startExam() {
-            showToast('Starting exam...', 'info');
             try {
                 const response = await fetch(`${API_URL}/exam/start`, {
                     method: 'POST',
@@ -599,69 +685,27 @@
                     body: JSON.stringify({ paperId: currentPaper.paperId })
                 });
                 const data = await response.json();
-                console.log('Start exam:', data);
                 
                 if (data.success) {
                     sessionId = data.data.sessionId;
-                    document.getElementById('totalQ').textContent = data.data.totalQuestions;
-                    document.getElementById('qNum').textContent = 1;
-                    document.getElementById('qMarks').textContent = data.data.currentQuestion.marks;
-                    document.getElementById('questionText').textContent = data.data.currentQuestion.text;
+                    totalQuestions = data.data.totalQuestions;
+                    currentQuestionNumber = 1;
+                    currentQuestionMarks = data.data.currentQuestion.marks;
+                    currentQuestionText = data.data.currentQuestion.text;
+                    
+                    document.getElementById('totalQ').textContent = totalQuestions;
+                    document.getElementById('qNum').textContent = currentQuestionNumber;
+                    document.getElementById('qMarks').textContent = currentQuestionMarks;
+                    document.getElementById('questionText').textContent = currentQuestionText;
+                    
                     showScreen('exam');
-                    speak(data.data.currentQuestion.text);
-                    speak(`This question is for ${data.data.currentQuestion.marks} marks. Please speak your answer.`);
+                    speakMessage(`Your exam has started. There are ${totalQuestions} questions.`);
+                    setTimeout(() => readQuestion(), 2000);
                 } else {
-                    speak(data.message || 'Failed to start');
+                    speakMessage(data.message || 'Failed to start exam.');
                 }
             } catch (error) {
-                console.error('Start exam error:', error);
-                speak('Network error');
-            }
-        }
-        
-        async function repeatQuestion() {
-            try {
-                const response = await fetch(`${API_URL}/exam/current-question?sessionId=${sessionId}`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                const data = await response.json();
-                if (data.success) {
-                    speak(data.data.question.text);
-                }
-            } catch (error) {
-                console.error('Repeat error:', error);
-            }
-        }
-        
-        async function submitAnswer() {
-            if (!currentAnswer) {
-                speak('Please speak your answer first');
-                return;
-            }
-            showToast('Saving...', 'info');
-            try {
-                const response = await fetch(`${API_URL}/exam/save-answer`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ sessionId, answer: currentAnswer })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    if (data.data.isCorrect) {
-                        speak(`Correct! You earned ${data.data.marksObtained} marks. Say next to continue.`);
-                    } else {
-                        speak('Answer saved. Say next to continue.');
-                    }
-                    showToast('Answer saved!', 'success');
-                    currentAnswer = '';
-                    document.getElementById('answerDisplay').innerHTML = 'Speak your answer...';
-                }
-            } catch (error) {
-                console.error('Submit error:', error);
-                speak('Network error');
+                speakMessage('Network error starting exam.');
             }
         }
         
@@ -676,28 +720,67 @@
                     body: JSON.stringify({ sessionId })
                 });
                 const data = await response.json();
-                console.log('Next:', data);
                 
                 if (data.success) {
                     if (data.isLastQuestion) {
-                        speak(data.message);
+                        speakMessage('This is the last question. Say Submit Exam when you are ready to finish.');
                     } else {
-                        document.getElementById('qNum').textContent = data.data.questionNumber;
-                        document.getElementById('qMarks').textContent = data.data.currentQuestion.marks;
-                        document.getElementById('questionText').textContent = data.data.currentQuestion.text;
-                        currentAnswer = '';
+                        currentQuestionNumber = data.data.questionNumber;
+                        currentQuestionMarks = data.data.currentQuestion.marks;
+                        currentQuestionText = data.data.currentQuestion.text;
+                        
+                        document.getElementById('qNum').textContent = currentQuestionNumber;
+                        document.getElementById('qMarks').textContent = currentQuestionMarks;
+                        document.getElementById('questionText').textContent = currentQuestionText;
                         document.getElementById('answerDisplay').innerHTML = 'Speak your answer...';
-                        speak(data.data.currentQuestion.text);
-                        speak(`This question is for ${data.data.currentQuestion.marks} marks. Please speak your answer.`);
+                        currentAnswer = '';
+                        
+                        readQuestion();
                     }
                 }
             } catch (error) {
-                console.error('Next error:', error);
+                speakMessage('Network error.');
+            }
+        }
+        
+        async function submitAnswer() {
+            if (!currentAnswer) {
+                speakMessage('Please speak your answer first, then say submit answer.');
+                return;
+            }
+            
+            speakMessage('Saving your answer.');
+            
+            try {
+                const response = await fetch(`${API_URL}/exam/save-answer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ sessionId, answer: currentAnswer })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.data.isCorrect) {
+                        speakMessage(`Correct! You earned ${data.data.marksObtained} marks.`);
+                    } else {
+                        speakMessage('Answer saved.');
+                    }
+                    showToast('Answer saved!');
+                    currentAnswer = '';
+                    document.getElementById('answerDisplay').innerHTML = 'Speak your answer...';
+                    speakMessage('Say next to continue to the next question.');
+                }
+            } catch (error) {
+                speakMessage('Network error saving answer.');
             }
         }
         
         async function submitExam() {
-            speak('Submitting exam...');
+            speakMessage('Submitting your exam. Please wait.');
+            
             try {
                 const response = await fetch(`${API_URL}/exam/submit`, {
                     method: 'POST',
@@ -708,19 +791,21 @@
                     body: JSON.stringify({ sessionId })
                 });
                 const data = await response.json();
+                
                 if (data.success) {
                     document.getElementById('scoreValue').textContent = data.data.score;
                     document.getElementById('totalValue').textContent = data.data.totalMarks;
-                    document.getElementById('scorePercent').textContent = data.data.percentage + '%';
+                    document.getElementById('scorePercent').textContent = data.data.percentage;
                     showScreen('results');
-                    speak(`Exam submitted! You scored ${data.data.score} out of ${data.data.totalMarks}.`);
+                    speakMessage(`Exam submitted! You scored ${data.data.score} out of ${data.data.totalMarks}, which is ${data.data.percentage} percent.`);
                 }
             } catch (error) {
-                console.error('Submit exam error:', error);
+                speakMessage('Network error submitting exam.');
             }
         }
         
         async function overExam() {
+            speakMessage('Ending exam session.');
             if (sessionId) {
                 try {
                     await fetch(`${API_URL}/exam/over`, {
@@ -728,83 +813,54 @@
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                         body: JSON.stringify({ sessionId })
                     });
-                } catch (e) {}
+                } catch(e) {}
             }
             sessionId = null;
             currentPaper = null;
             showScreen('dashboard');
             loadPapers();
-            speak('Exam session ended.');
+            speakMessage('Exam session ended. You can select another paper or logout.');
         }
         
         async function handleLogout() {
+            speakMessage('Logging out.');
             authToken = null;
             currentUser = null;
             sessionId = null;
+            currentPaper = null;
+            document.getElementById('rollNumber').value = '';
+            document.getElementById('password').value = '';
             showScreen('login');
-            speak('Logged out.');
+            speakMessage('You have been logged out. Say Login to continue.');
         }
         
         async function handleExit() {
-            speak('Goodbye!');
+            speakMessage('Goodbye! Thank you for using HandSense.');
             authToken = null;
             showScreen('login');
         }
         
         function setupButtons() {
-            // Mic buttons
-            document.querySelectorAll('.mic-btn').forEach(btn => {
-                btn.onclick = startListening;
-            });
-            
-            // Login
             document.getElementById('loginBtn').onclick = () => {
                 const roll = document.getElementById('rollNumber').value;
                 const pass = document.getElementById('password').value;
-                login(roll, pass);
+                if (roll && pass) login(roll, pass);
             };
-            
-            // Register
-            document.getElementById('registerBtn').onclick = () => showScreen('register');
-            document.getElementById('backToLoginBtn').onclick = () => showScreen('login');
-            document.getElementById('submitRegisterBtn').onclick = async () => {
-                const roll = document.getElementById('regRollNumber').value;
-                const name = document.getElementById('regName').value;
-                const className = document.getElementById('regClass').value;
-                const pass = document.getElementById('regPassword').value;
-                
-                try {
-                    const response = await fetch(`${API_URL}/auth/register`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ rollNumber: roll, name, class: className, password: pass })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        showToast('Registration successful! Please login.', 'success');
-                        speak('Registration successful! Please login.');
-                        showScreen('login');
-                    } else {
-                        showToast(data.message, 'error');
-                        speak(data.message);
-                    }
-                } catch (error) {
-                    showToast('Registration failed', 'error');
+            document.getElementById('logoutBtn').onclick = handleLogout;
+            document.getElementById('repeatBtn').onclick = () => {
+                if (currentQuestionText) {
+                    speakQuick('Repeating the question.');
+                    readQuestion();
                 }
             };
-            
-            // Logout
-            document.getElementById('logoutBtn').onclick = handleLogout;
-            
-            // Exam buttons
-            document.getElementById('repeatBtn').onclick = repeatQuestion;
             document.getElementById('submitAnswerBtn').onclick = submitAnswer;
-            document.getElementById('nextBtn').onclick = nextQuestion;
+            document.getElementById('nextBtn').onclick = () => {
+                speakQuick('Moving to next question.');
+                nextQuestion();
+            };
             document.getElementById('submitExamBtn').onclick = submitExam;
             document.getElementById('overExamBtn').onclick = overExam;
             document.getElementById('exitExamBtn').onclick = overExam;
-            
-            // Results buttons
             document.getElementById('dashboardBtn').onclick = () => {
                 showScreen('dashboard');
                 loadPapers();
@@ -812,7 +868,8 @@
             document.getElementById('exitSystemBtn').onclick = handleExit;
         }
         
-        console.log('Frontend ready!');
+        console.log('✅ HandSense Ready with Auto-Mic!');
+        console.log('✅ Microphone will turn ON automatically after system speaks');
     </script>
 </body>
 </html>
